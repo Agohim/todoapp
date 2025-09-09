@@ -1,12 +1,16 @@
-// MainActivity.kt
 package com.example.todoapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.todoapp.Todo
+import com.example.todoapp.TodoAdapter
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,13 +33,63 @@ class MainActivity : AppCompatActivity() {
         val addButton: ImageButton = findViewById(R.id.add_button)
 
         // RecyclerView 설정
-        todoAdapter = TodoAdapter(todoList) { todo ->
-            // 할 일 항목의 완료 상태를 토글
-            todo.isDone = !todo.isDone
+        todoAdapter = TodoAdapter(todoList){ todo, position ->
+            val builder = AlertDialog.Builder(this)
+            val view = layoutInflater.inflate(R.layout.dialog_edit_todo, null)
+            val editTextInput = view.findViewById<EditText>(R.id.edit_todo_input)
+            val saveButton = view.findViewById<Button>(R.id.save_button)
+            val cancelButton = view.findViewById<Button>(R.id.cancel_button)
+
+            editTextInput.setText(todo.title)
+
+            builder.setView(view)
+            val dialog = builder.create()
+
+            saveButton.setOnClickListener {
+                val newTitle = editTextInput.text.toString()
+                if (newTitle.isNotEmpty()) {
+                    todo.title = newTitle
+                    todoAdapter.notifyItemChanged(position)
+                    dialog.dismiss()
+                }
+            }
+
+            cancelButton.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.show()
         }
 
         recyclerView.adapter = todoAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // ✅ ItemTouchHelperCallback 객체를 먼저 정의
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
+            0, // 드래그 기능 사용 안 함
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT // 왼쪽, 오른쪽 스와이프를 허용
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // 스와이프가 발생했을 때 호출되는 메서드
+                val position = viewHolder.getBindingAdapterPosition()
+                // 할 일 리스트에서 해당 항목 삭제
+                todoList.removeAt(position)
+                // 어댑터에 항목이 삭제되었음을 알려 UI 업데이트
+                todoAdapter.notifyItemRemoved(position)
+            }
+        }
+
+        // ✅ 정의된 callback을 사용하여 ItemTouchHelper 연결
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
 
         // 버튼 클릭 이벤트
         addButton.setOnClickListener {

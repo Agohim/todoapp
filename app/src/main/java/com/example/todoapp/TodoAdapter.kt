@@ -4,13 +4,14 @@ import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-//class TodoAdapter(private val todoList: List<Todo>) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
-class TodoAdapter(private val todoList: MutableList<Todo>, private val onItemClick: (Todo) -> Unit) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
+class TodoAdapter(private val todoList: MutableList<Todo>, private val onItemLongClick: (Todo, Int) -> Unit) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
     class TodoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val todoTitle: TextView = view.findViewById(R.id.todo_title)
+        val completeCheckbox: CheckBox = view.findViewById(R.id.complete_checkbox)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
@@ -23,11 +24,22 @@ class TodoAdapter(private val todoList: MutableList<Todo>, private val onItemCli
         val todo = todoList[position]
         holder.todoTitle.text = todo.title
 
-        //항목 클릭 이벤트 리스너
-        holder.itemView.setOnClickListener {
-            onItemClick(todo)
-            //클릭 시 바로 UI를 업데이트하기 위해 notifyItemChanged() 호출
+        //체크박스 상태를 데이터와 동기화
+        holder.completeCheckbox.isChecked = todo.isDone
+
+        //항목 클릭 리스너를 체크박스에 직접 설정
+        holder.completeCheckbox.setOnClickListener {
+            //할 일 항목의 완료 상태를 토글
+            todo.isDone =!todo.isDone
+            //UI 업데이트를 위해 notifyItemChanged() 호출
             notifyItemChanged(position)
+        }
+
+        //항목을 길게 눌렀을때 이벤트 처리
+        holder.itemView.setOnClickListener {
+            onItemLongClick(todo, position)
+            true // 이벤트 소비
+
         }
 
         //완료 상태에 따른 UI업데이트

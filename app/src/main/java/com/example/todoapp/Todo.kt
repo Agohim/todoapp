@@ -1,6 +1,6 @@
 package com.example.todoapp
 
 data class Todo(
-    val title: String,
+    var title: String,
     var isDone: Boolean = false
 )
