@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -15,6 +17,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // ✅ Room 스키마 내보내기 비활성화
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas"
+                arguments["room.exportSchema"] = "true" // true로 설정하여 스키마 내보내기를 활성화합니다.
+            }
+        }
     }
 
     buildTypes {
@@ -50,4 +60,15 @@ dependencies {
     implementation("androidx.cardview:cardview:1.0.0")
     // RecyclerView와 함께 사용할 레이아웃 매니저
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // Room 라이브러리
+    val room_version = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    // 코틀린용 KAPT (Kotlin Annotation Processing Tool) 사용
+    kapt("androidx.room:room-compiler:$room_version")
+
+    // 코루틴 지원
+    implementation("androidx.room:room-ktx:$room_version")
 }

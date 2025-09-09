@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.todoapp.R
 
-class TodoAdapter(private val todoList: MutableList<Todo>, private val onItemLongClick: (Todo, Int) -> Unit) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
+class TodoAdapter(private var todoList: List<Todo>, private val onTodoClick: (Todo) -> Unit) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
+
     class TodoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val todoTitle: TextView = view.findViewById(R.id.todo_title)
         val completeCheckbox: CheckBox = view.findViewById(R.id.complete_checkbox)
@@ -24,33 +26,32 @@ class TodoAdapter(private val todoList: MutableList<Todo>, private val onItemLon
         val todo = todoList[position]
         holder.todoTitle.text = todo.title
 
-        //체크박스 상태를 데이터와 동기화
         holder.completeCheckbox.isChecked = todo.isDone
 
-        //항목 클릭 리스너를 체크박스에 직접 설정
+        // 체크박스 클릭 리스너 설정
         holder.completeCheckbox.setOnClickListener {
-            //할 일 항목의 완료 상태를 토글
-            todo.isDone =!todo.isDone
-            //UI 업데이트를 위해 notifyItemChanged() 호출
-            notifyItemChanged(position)
+            onTodoClick(todo)
         }
 
-        //항목을 길게 눌렀을때 이벤트 처리
-        holder.itemView.setOnClickListener {
-            onItemLongClick(todo, position)
-            true // 이벤트 소비
-
-        }
-
-        //완료 상태에 따른 UI업데이트
         if (todo.isDone) {
             holder.todoTitle.paintFlags = holder.todoTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-            holder.todoTitle.setTextColor(0xFF888888.toInt()) // 회색
+            holder.todoTitle.setTextColor(0xFF888888.toInt())
         } else {
             holder.todoTitle.paintFlags = holder.todoTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-            holder.todoTitle.setTextColor(0xFF000000.toInt()) // 검은색
+            holder.todoTitle.setTextColor(0xFF000000.toInt())
         }
     }
 
     override fun getItemCount() = todoList.size
+
+    // 이 메서드는 외부에서 데이터를 업데이트할 때 사용합니다.
+    fun updateData(newTodoList: List<Todo>) {
+        todoList = newTodoList
+        notifyDataSetChanged()
+    }
+
+    // ✅ public 함수를 추가하여 외부에서 todoList에 안전하게 접근
+    fun getTodoAt(position: Int): Todo {
+        return todoList[position]
+    }
 }
