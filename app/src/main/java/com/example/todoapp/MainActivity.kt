@@ -1,13 +1,12 @@
 // MainActivity.kt
+package com.example.todoapp
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.todoapp.R
-import com.example.todoapp.Todo
-import com.example.todoapp.TodoAdapter
 
 class MainActivity : AppCompatActivity() {
 
